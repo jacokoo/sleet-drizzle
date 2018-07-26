@@ -1,0 +1,14 @@
+{
+  "name": "sleet-drizzle",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jaco Koo <jaco.koo@guyong.in>",
+  "license": "ISC",
+  "dependencies": {
+    "sleet": "^0.1.1"
+  }
+}
