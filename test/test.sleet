@@ -1,0 +1,7 @@
+#! drizzle
+
+module(a=1) > a > b
+    c
+
+script.
+    const abc = 10
