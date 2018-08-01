@@ -1,3 +1,7 @@
+export interface Context {
+    nextId() : string
+}
+
 export function overrideContext (
     context: Sleet.Context,
     options: Sleet.PluginOption & Sleet.CompileOption,
