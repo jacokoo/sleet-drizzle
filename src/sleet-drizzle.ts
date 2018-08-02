@@ -1,11 +1,13 @@
-export interface Context {
-    nextId() : string
-}
+import { Context } from './context'
+import { DrizzleTag } from './tag'
 
 export function overrideContext (
     context: Sleet.Context,
     options: Sleet.PluginOption & Sleet.CompileOption,
-    declaration: Sleet.Declaration) {
+    declaration: Sleet.Declaration
+) {
+
+    const ctx = new Context(context)
 
     context.doCompile = tags => {
         if (tags.length > 2) {
@@ -17,10 +19,11 @@ export function overrideContext (
         if (tags.length > 1 && tags[1].name !== 'script') {
             throw new Error('the second root element should be script')
         }
-        console.log(tags)
+        const t = new DrizzleTag(tags[0], null)
+        ctx.create(t, null).doCompile()
     }
 
     context.getOutput = () => {
-        return 'hello'
+        return ctx.getOutput()
     }
 }

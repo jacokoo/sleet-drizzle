@@ -1,7 +1,11 @@
 #! drizzle
 
-module(a=1) > a > b
-    c
+module(a=1)
+    section(class='todo')&each(todos as todo)
+        div(class='abc')&if(todo.name eq 'abc') > h1 h1
+        div(class='bcd')&elseif(todo.name eq 'bcd') > h2 h2
+        div(class='cde')&else(a) > h3 a
+    section(on:a=hello(a))
 
 script.
     const abc = 10

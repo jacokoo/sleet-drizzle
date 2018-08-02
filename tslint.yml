@@ -35,3 +35,5 @@ rules:
     - false
   variable-name:
     - false
+  max-classes-per-file:
+    - false

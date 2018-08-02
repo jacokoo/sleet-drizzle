@@ -7,7 +7,7 @@ declare namespace Sleet {
     }
 
     type ElementType = 'tag' | 'attribute' | 'group' | 'setting' | 'value'
-    type AttributeMajorType = 'helper' | 'setting'
+    type AttributeMajorType = 'helper' | 'setting' | ''
     type ValueMinorType = 'quoted' | 'number' | 'boolean' | 'identifier' | 'helper'
 
     interface Value {
@@ -36,6 +36,7 @@ declare namespace Sleet {
     interface AttributeGroup {
         attributes: Attribute[]
         setting: AttributeSetting
+        merge: (AttributeGroup) => void
     }
 
     type InlineChar = ':' | '>' | '<' | '+'
@@ -43,14 +44,14 @@ declare namespace Sleet {
     interface Tag {
         indent: number
         name?: string
-        namespace: string
+        namespace?: string
         dots: string[]
-        hash: string
+        hash?: string
         children: Tag[]
-        inlineChar: InlineChar
+        inlineChar?: InlineChar
         inlines: Tag[]
-        attributeGroups: AttributeGroup[]
-        parent: Tag
+        attributeGroups?: AttributeGroup[]
+        parent?: Tag
         firstAttribute?: Attribute
         text: string[]
     }
@@ -69,6 +70,8 @@ declare namespace Sleet {
     }
 
     interface Context {
+        _indentToken: string
+        _newlineToken: string
         doCompile (tags: Tag[]): void
         getOutput (): string
     }

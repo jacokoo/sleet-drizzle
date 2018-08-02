@@ -1,5 +1,4 @@
 *.html
 node_modules
-*.js
 build
 .vscode
