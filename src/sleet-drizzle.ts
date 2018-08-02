@@ -1,5 +1,6 @@
 import { Context } from './context'
 import { DrizzleTag } from './tag'
+import { ScriptCompiler } from './script';
 
 export function overrideContext (
     context: Sleet.Context,
@@ -9,7 +10,8 @@ export function overrideContext (
 
     const ctx = new Context(context)
 
-    context.doCompile = tags => {
+    context.doCompile = ts => {
+        const tags = ts.filter(it => it.name !== '#')
         if (tags.length > 2) {
             throw new Error('only two root elements are allowed: 1. module/view 2. script')
         }
@@ -22,6 +24,9 @@ export function overrideContext (
         ctx.isView = tags[0].name === 'view'
         const t = new DrizzleTag(tags[0], null)
         ctx.create(t, null).doCompile()
+
+        const script = new ScriptCompiler(ctx, new DrizzleTag(tags[1], null), null)
+        script.doCompile()
     }
 
     context.getOutput = () => {

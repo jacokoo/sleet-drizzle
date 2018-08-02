@@ -5,6 +5,8 @@ import { TagCompiler } from './tag-compiler'
 import { IfCompiler } from './if-compiler'
 import { Compiler } from './compiler'
 import { TextCompiler } from './text-compiler'
+import { ReferenceCompiler } from './reference-compiler'
+import { RegionCompiler } from './region-compiler';
 
 export class Context {
     id: number = 0
@@ -26,9 +28,11 @@ export class Context {
         if (tag.name === 'module') return new ModuleCompiler(this, tag, parent)
         if (tag.name === 'view') return new ViewCompiler(this, tag, parent)
         if (tag.name === '|') return new TextCompiler(this, tag, parent)
+        if (tag.name === 'region') return new RegionCompiler(this, tag, parent)
         if (!tag.setting) return new TagCompiler(this, tag, parent)
         if (tag.setting.name === 'each') return new EachCompiler(this, tag, parent)
         if (tag.setting.name === 'if') return new IfCompiler(this, tag, parent)
+        if (this.references.indexOf(tag.name) !== -1) return new ReferenceCompiler(this, tag, parent)
         throw new SyntaxError(`not supported setting ${tag.setting.name}`)
     }
 

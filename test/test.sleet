@@ -8,4 +8,24 @@ module(a=1)
     section(on:a=hello(a))
 
 script.
+    const a = 20
+    function b() {
+        console.log(a)
+        return a
+    }
+    export default {
+        actions: {
+            newTodo (name) {
+                if (!name) {
+                    console.log('name is required')
+                    return false
+                }
+
+                this.ids.inputId.value = ''
+                return name
+            }
+        },
+
+        a
+    }
     const abc = 10

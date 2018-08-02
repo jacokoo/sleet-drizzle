@@ -9,6 +9,8 @@
   "author": "Jaco Koo <jaco.koo@guyong.in>",
   "license": "ISC",
   "dependencies": {
+    "acorn": "^5.7.1",
+    "escodegen": "^1.11.0",
     "sleet": "^0.1.1"
   }
 }

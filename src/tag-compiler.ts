@@ -6,20 +6,17 @@ export class TagCompiler extends Compiler {
     binds: string[] = []
     events: string[] = []
     actions: string[] = []
+    type = 'SN'
 
     doCompile () {
         this.tag.attributes.forEach(it => this.doAttribute(it))
 
-        let type = 'SN'
-        if (this.dynamics.length || this.binds.length || this.events.length || this.actions.length) {
-            type = 'DN'
-        }
         const id = this.tag.id ? `'${this.tag.id}'` : null
         let st = this.statics.join(', ')
         const na = this.tag.name
 
-        this.context.factory(type, 'C')
-        if (type === 'SN') {
+        this.context.factory(this.type, 'C')
+        if (this.type === 'SN') {
             if (this.statics.length) {
                 st = ', ' + st
             }
@@ -31,13 +28,11 @@ export class TagCompiler extends Compiler {
             const ac = this.actions.join(', ')
             this.context.init(`const ${this.id} = DN('${na}', ${id}, [${st}], [${dy}], [${bi}], [${ev}], [${ac}])`)
         }
-        this.children.forEach(it => it.doCompile())
-        if (this.children.length) {
-            this.context.connect(`C(${this.id}, ${this.children.map(it => it.id).join(', ')})`)
-        }
+
+        super.doCompile()
     }
 
-    doAttribute (attr: Sleet.Attribute) {
+    doAttribute (attr: Sleet.Attribute): void {
         if (attr.namespace) {
             if (attr.namespace === 'on') return this.doEvent(attr)
             if (attr.namespace === 'action') return this.doAction(attr)
@@ -52,17 +47,20 @@ export class TagCompiler extends Compiler {
         if (attr.value.length === 1 && attr.value[0].minor === 'identifier'
             && (attr.value[0].value as string).slice(0, 5) === 'bind:') {
                 this.binds.push(`${this.f('KV')}('${attr.value[0].value}')`)
+                return
         }
 
         return this.doStatic(attr)
     }
 
     doEvent (attr: Sleet.Attribute) {
+        this.type = 'DN'
         this.context.factory('E')
         this.events.push(`E(${this.eventString(attr)})`)
     }
 
     doAction (attr: Sleet.Attribute) {
+        this.type = 'DN'
         this.context.factory('A')
         this.actions.push(`A(${this.eventString(attr)})`)
     }
@@ -91,11 +89,13 @@ export class TagCompiler extends Compiler {
     }
 
     doBind (attr: Sleet.Attribute) {
+        this.type = 'DN'
         this.context.factory('B')
         this.actions.push(`B('${attr.name}', '${attr.value[0].value}')`)
     }
 
     doDynamic (attr: Sleet.Attribute) {
+        this.type = 'DN'
         const {name, value} = attr
         const helpers = []
 
