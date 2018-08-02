@@ -19,6 +19,7 @@ export function overrideContext (
         if (tags.length > 1 && tags[1].name !== 'script') {
             throw new Error('the second root element should be script')
         }
+        ctx.isView = tags[0].name === 'view'
         const t = new DrizzleTag(tags[0], null)
         ctx.create(t, null).doCompile()
     }

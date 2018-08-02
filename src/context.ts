@@ -1,6 +1,6 @@
 import { Tag } from './tag'
 import { EachCompiler } from './each-compiler'
-import { ModuleCompiler } from './template'
+import { ModuleCompiler, ViewCompiler } from './template'
 import { TagCompiler } from './tag-compiler'
 import { IfCompiler } from './if-compiler'
 import { Compiler } from './compiler'
@@ -11,6 +11,8 @@ export class Context {
     indent: number = 0
     ctx: Sleet.Context
     isRoot = true
+    isView = false
+    references: string[] = []
     private factories: string[] = []
     private starts: string[] = []
     private inits: string[] = []
@@ -22,7 +24,7 @@ export class Context {
 
     create (tag: Tag, parent: Compiler) {
         if (tag.name === 'module') return new ModuleCompiler(this, tag, parent)
-        if (tag.name === 'view') return null
+        if (tag.name === 'view') return new ViewCompiler(this, tag, parent)
         if (tag.name === '|') return new TextCompiler(this, tag, parent)
         if (!tag.setting) return new TagCompiler(this, tag, parent)
         if (tag.setting.name === 'each') return new EachCompiler(this, tag, parent)
@@ -71,12 +73,18 @@ export class Context {
         return output.join(this.ctx._newlineToken)
     }
 
+    isReference (name: string) {
+        return this.references.indexOf(name) !== -1
+    }
+
     sub (): Context {
         const c = new Context(this.ctx)
         c.indent = this.indent + 1
         c.nextId = () => this.nextId()
         c.factory = (...args: string[]) => this.factory(...args)
         c.isRoot = false
+        c.isView = this.isView
+        c.isReference = (name: string) => this.isReference(name)
         return c
     }
 

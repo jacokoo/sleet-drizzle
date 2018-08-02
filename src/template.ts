@@ -9,3 +9,19 @@ export class ModuleCompiler extends Compiler {
         this.context.connect(`${this.id}.nodes = [${this.children.map(it => it.id).join(', ')}]`)
     }
 }
+
+export class ViewCompiler extends Compiler {
+    initChildren () {
+        if (this.tag.attributes) {
+            this.context.references = this.tag.attributes.map(it => it.value[0].value as string)
+        }
+        super.initChildren()
+    }
+
+    doCompile () {
+        this.context.start(`import {ViewTemplate} from 'drizzle'`)
+        this.context.init(`const ${this.id} = new ViewTemplate()`)
+        this.children.forEach(it => it.doCompile())
+        this.context.connect(`${this.id}.nodes = [${this.children.map(it => it.id).join(', ')}]`)
+    }
+}

@@ -41,7 +41,8 @@ export class DrizzleTag implements Tag {
     }
 
     initChildren () {
-        this.children = this.sleet.children.map(it => new DrizzleTag(it, this))
+        this.children = this.sleet.children.filter(it => it.name !== '#').map(it => new DrizzleTag(it, this))
+
         if (this.sleet.text.length && this.name !== '|') {
             this.children.unshift(new DrizzleTag({
                 name: '|',
