@@ -1,6 +1,6 @@
 #! drizzle
 
-module(a=1)
+module(todos)
     section(class='todo')&each(todos as todo)
         div(class='abc')&if(todo.name eq 'abc') > h1 h1
         div(class='bcd')&elseif(todo.name eq 'bcd') > h2 h2
@@ -8,24 +8,20 @@ module(a=1)
     section(on:a=hello(a))
 
 script.
-    const a = 20
+    const a = {a: 1, b: 2}
+    const bb = {...a, c: 3}
     function b() {
         console.log(a)
         return a
     }
     export default {
-        actions: {
-            newTodo (name) {
-                if (!name) {
-                    console.log('name is required')
-                    return false
-                }
-
-                this.ids.inputId.value = ''
-                return name
+        items: {
+            'views': ['a-a', 'b-b', 'c-c'],
+            refs: ['abc-d', 'def-a'],
+            modules: {
+                'abc-d': 'module/name',
+                'a-s': 'hello'
             }
-        },
-
-        a
+        }
     }
     const abc = 10

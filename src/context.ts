@@ -6,7 +6,7 @@ import { IfCompiler } from './if-compiler'
 import { Compiler } from './compiler'
 import { TextCompiler } from './text-compiler'
 import { ReferenceCompiler } from './reference-compiler'
-import { RegionCompiler } from './region-compiler';
+import { RegionCompiler } from './region-compiler'
 
 export class Context {
     id: number = 0
@@ -68,11 +68,11 @@ export class Context {
         }
 
         output = output.concat(this.starts)
-        output.push('')
+        if (this.starts.length) output.push('')
         output = output.concat(this.inits)
-        output.push('')
+        if (this.inits.length) output.push('')
         output = output.concat(this.connects)
-        output.push('')
+        if (this.connects.length) output.push('')
 
         return output.join(this.ctx._newlineToken)
     }
