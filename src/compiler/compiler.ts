@@ -37,10 +37,14 @@ export abstract class Compiler {
         return str
     }
 
-    doCompile () {
+    compileChildren () {
         this.children.forEach(it => it.doCompile())
         if (this.children.length) {
             this.context.connect(`C(${this.id}, ${this.children.map(it => it.id).join(', ')})`)
         }
+    }
+
+    doCompile () {
+        this.compileChildren()
     }
 }

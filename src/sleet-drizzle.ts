@@ -36,3 +36,7 @@ export function overrideContext (
         return ctx.getOutput()
     }
 }
+
+export function getDefaultExtension () {
+    return 'js'
+}

@@ -56,13 +56,13 @@ export class TagCompiler extends Compiler {
     doEvent (attr: Sleet.Attribute) {
         this.type = 'DN'
         this.context.factory('E')
-        this.events.push(`E(${this.eventString(attr)})`)
+        this.events.push(`E${this.eventString(attr)}`)
     }
 
     doAction (attr: Sleet.Attribute) {
         this.type = 'DN'
         this.context.factory('A')
-        this.actions.push(`A(${this.eventString(attr)})`)
+        this.actions.push(`A${this.eventString(attr)}`)
     }
 
     eventString (attr: Sleet.Attribute) {
@@ -85,7 +85,7 @@ export class TagCompiler extends Compiler {
             return `('${attr.name}', '${name}', ${vs})`
         }
 
-        return `('${attr.name}', '${name}')`
+        return `('${attr.name}', '${v.value}')`
     }
 
     doBind (attr: Sleet.Attribute) {
@@ -123,7 +123,7 @@ export class TagCompiler extends Compiler {
             }
         })
 
-        this.dynamics.push(`DA(${name}, ${helpers.join(', ')})`)
+        this.dynamics.push(`DA('${name}', ${helpers.join(', ')})`)
     }
 
     doStatic (attr: Sleet.Attribute) {

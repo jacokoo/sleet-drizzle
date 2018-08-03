@@ -6,6 +6,9 @@ module(todos)
         div(class='bcd')&elseif(todo.name eq 'bcd') > h2 h2
         div(class='cde')&else(a) > h3 a
     section(on:a=hello(a))
+    echo('a', b if(a a) c + d + if(c eq d e) 1 true false)
+    echo('a')
+    echo(b)
 
 script.
     const a = {a: 1, b: 2}

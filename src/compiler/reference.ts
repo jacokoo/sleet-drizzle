@@ -13,7 +13,7 @@ export class ReferenceCompiler extends TagCompiler {
         const ac = `[${this.actions.join(', ')}]`
         this.context.init(`const ${this.id} = REF(${na}, ${id}, ${bi}, ${ev}, ${ac})`)
 
-        super.doCompile()
+        this.compileChildren()
     }
 
     doAttribute (attr: Sleet.Attribute): void {

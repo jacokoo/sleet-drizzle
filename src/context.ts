@@ -7,9 +7,10 @@ import { Compiler } from './compiler/compiler'
 import { TextCompiler } from './compiler/text'
 import { ReferenceCompiler } from './compiler/reference'
 import { RegionCompiler } from './compiler/region'
+import { EchoCompiler } from './compiler/echo'
 
 export class Context {
-    id: number = 0
+    id: number = -1
     indent: number = 0
     ctx: Sleet.Context
     isRoot = true
@@ -29,11 +30,13 @@ export class Context {
         if (tag.name === 'view') return new ViewCompiler(this, tag, parent)
         if (tag.name === '|') return new TextCompiler(this, tag, parent)
         if (tag.name === 'region') return new RegionCompiler(this, tag, parent)
-        if (!tag.setting) return new TagCompiler(this, tag, parent)
-        if (tag.setting.name === 'each') return new EachCompiler(this, tag, parent)
-        if (tag.setting.name === 'if') return new IfCompiler(this, tag, parent)
+        if (tag.setting) {
+            if (tag.setting.name === 'each') return new EachCompiler(this, tag, parent)
+            if (tag.setting.name === 'if') return new IfCompiler(this, tag, parent)
+        }
+        if (tag.name === 'echo') return new EchoCompiler(this, tag, parent)
         if (this.references.indexOf(tag.name) !== -1) return new ReferenceCompiler(this, tag, parent)
-        throw new SyntaxError(`not supported setting ${tag.setting.name}`)
+        return new TagCompiler(this, tag, parent)
     }
 
     nextId (): string {
@@ -62,9 +65,9 @@ export class Context {
 
     getOutput (): string {
         let output = []
-        if (this.isRoot) {
-            output.push(`import {factory} from 'drizzle'`)
-            output.push(`const {${this.factories.join(', ')}} = factory`)
+        if (this.isRoot && this.factories.length) {
+            this.starts.unshift(`import {factory} from 'drizzle'`)
+            this.inits.unshift(`const {${this.factories.join(', ')}} = factory`)
         }
 
         output = output.concat(this.starts)
