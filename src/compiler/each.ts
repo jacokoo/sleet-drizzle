@@ -1,7 +1,7 @@
 import { Compiler } from './compiler'
-import { Tag } from './tag'
-import { TagCompiler } from './tag-compiler'
-import { Context } from './context'
+import { Tag } from '../tag'
+import { TagCompiler } from './tag'
+import { Context } from '../context'
 
 export class EachCompiler extends Compiler {
     trueBlock: Compiler

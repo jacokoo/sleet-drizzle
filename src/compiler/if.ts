@@ -1,6 +1,6 @@
 import { Compiler } from './compiler'
-import { Tag } from './tag'
-import { TagCompiler } from './tag-compiler'
+import { Tag } from '../tag'
+import { TagCompiler } from './tag'
 
 export class IfCompiler extends Compiler {
     trueBlock: Compiler

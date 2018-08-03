@@ -1,12 +1,12 @@
 import { Tag } from './tag'
-import { EachCompiler } from './each-compiler'
-import { ModuleCompiler, ViewCompiler } from './template'
-import { TagCompiler } from './tag-compiler'
-import { IfCompiler } from './if-compiler'
-import { Compiler } from './compiler'
-import { TextCompiler } from './text-compiler'
-import { ReferenceCompiler } from './reference-compiler'
-import { RegionCompiler } from './region-compiler'
+import { EachCompiler } from './compiler/each'
+import { ModuleCompiler, ViewCompiler } from './compiler/template'
+import { TagCompiler } from './compiler/tag'
+import { IfCompiler } from './compiler/if'
+import { Compiler } from './compiler/compiler'
+import { TextCompiler } from './compiler/text'
+import { ReferenceCompiler } from './compiler/reference'
+import { RegionCompiler } from './compiler/region'
 
 export class Context {
     id: number = 0

@@ -1,5 +1,5 @@
 import { Compiler } from './compiler'
-import { Tag } from './tag'
+import { Tag } from '../tag'
 
 export class ModuleCompiler extends Compiler {
     exportedModels: string[]

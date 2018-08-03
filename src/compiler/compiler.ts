@@ -1,5 +1,5 @@
-import { Tag } from './tag'
-import { Context } from './context'
+import { Tag } from '../tag'
+import { Context } from '../context'
 
 export abstract class Compiler {
     tag: Tag

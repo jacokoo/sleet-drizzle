@@ -1,6 +1,6 @@
 import { Context } from './context'
 import { DrizzleTag } from './tag'
-import { ScriptCompiler } from './script'
+import { ScriptCompiler } from './compiler/script'
 
 export function overrideContext (
     context: Sleet.Context,

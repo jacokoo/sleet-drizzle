@@ -1,4 +1,4 @@
-import { TagCompiler } from './tag-compiler'
+import { TagCompiler } from './tag'
 
 export class ReferenceCompiler extends TagCompiler {
 
