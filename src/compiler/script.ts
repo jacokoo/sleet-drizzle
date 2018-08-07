@@ -30,14 +30,8 @@ export class ScriptCompiler extends Compiler {
         b.declaration.properties.push({
             type: 'Property',
             shorthand: true,
-            key: {
-                type: 'Identifier',
-                name: 'template'
-            },
-            value: {
-                type: 'Identifier',
-                name: 'template'
-            }
+            key: { type: 'Identifier', name: 'template' },
+            value: { type: 'Identifier', name: 'template' }
         })
 
         this.body = body
