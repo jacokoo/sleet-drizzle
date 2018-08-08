@@ -1,5 +1,4 @@
 import { Compiler } from './compiler'
-import { Tag } from '../tag'
 
 export class ModuleCompiler extends Compiler {
     exportedModels: string[]
@@ -13,7 +12,7 @@ export class ModuleCompiler extends Compiler {
 
     doCompile () {
         this.id = 'template'
-        this.context.start(`import {ModuleTemplate} from 'drizzle'`)
+        this.context.start(`import {ModuleTemplate} from 'drizzlejs'`)
         this.context.init(`const ${this.id} = new ModuleTemplate([${this.exportedModels.join(', ')}])`)
         this.children.forEach(it => it.doCompile())
         this.context.connect(`${this.id}.nodes = [${this.children.map(it => it.id).join(', ')}]`)
@@ -31,7 +30,7 @@ export class ViewCompiler extends Compiler {
     doCompile () {
         this.id = 'template'
 
-        this.context.start(`import {ViewTemplate} from 'drizzle'`)
+        this.context.start(`import {ViewTemplate} from 'drizzlejs'`)
         this.context.init(`const ${this.id} = new ViewTemplate()`)
         this.children.forEach(it => it.doCompile())
         this.context.connect(`${this.id}.nodes = [${this.children.map(it => it.id).join(', ')}]`)

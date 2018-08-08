@@ -66,7 +66,7 @@ export class Context {
     getOutput (): string {
         let output = []
         if (this.isRoot && this.factories.length) {
-            this.starts.unshift(`import {factory} from 'drizzle'`)
+            this.starts.unshift(`import {factory} from 'drizzlejs'`)
             this.inits.unshift(`const {${this.factories.join(', ')}} = factory`)
         }
 
