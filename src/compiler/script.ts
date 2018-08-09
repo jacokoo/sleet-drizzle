@@ -20,7 +20,7 @@ export class ScriptCompiler extends Compiler {
         }
 
         const {properties} = b.declaration
-        const items = properties.find(it => it.key.name === 'items')
+        const items = properties.find(it => it.key.name === 'items' || it.key.value === 'items')
         this.references = this.getReferences(items && items.value)
         if (this.references.some(it => it.indexOf('-') === -1)) {
             throw new SyntaxError('The key of view or module reference should ' +

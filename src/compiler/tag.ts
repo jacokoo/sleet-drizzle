@@ -91,7 +91,7 @@ export class TagCompiler extends Compiler {
     doBind (attr: Sleet.Attribute) {
         this.type = 'DN'
         this.context.factory('B')
-        this.actions.push(`B('${attr.name}', '${attr.value[0].value}')`)
+        this.binds.push(`B('${attr.name}', '${attr.value[0].value}')`)
     }
 
     doDynamic (attr: Sleet.Attribute) {
@@ -102,8 +102,8 @@ export class TagCompiler extends Compiler {
         let sts = []
         value.forEach(it => {
             if (it.minor === 'identifier') {
+                this.context.factory('H', 'SV')
                 if (sts.length) {
-                    this.context.factory('H', 'SV')
                     helpers.push(`H(SV('${sts.join(name === 'class' ? ' ' : '')}'))`)
                     sts = []
                 }
@@ -123,6 +123,7 @@ export class TagCompiler extends Compiler {
             }
         })
 
+        this.context.factory('DA')
         this.dynamics.push(`DA('${name}', ${helpers.join(', ')})`)
     }
 
