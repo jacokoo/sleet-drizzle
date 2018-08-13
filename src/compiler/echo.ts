@@ -1,40 +1,30 @@
 import { Compiler } from './compiler'
 
-const valueIt = (value: Sleet.Value, ignoreHeler) => {
-    if (value.minor === 'number' || value.minor === 'boolean') return `SV(${value.value})`
-    if (value.minor === 'identifier') return `DV('${value.value}')`
-    if (value.minor === 'quoted') return `SV('${value.value}')`
+function valueIt (this: Compiler, value: Sleet.Value, ignoreHeler = false) {
+    if (value.minor === 'number' || value.minor === 'boolean') return `${this.f('SV')}(${value.value})`
+    if (value.minor === 'identifier') return `${this.f('DV')}('${value.value}')`
+    if (value.minor === 'quoted') return `${this.f('SV')}('${value.value}')`
     if (ignoreHeler) return ''
 
     const vv = value as Sleet.Helper
-    const vs = vv.attributes.map(it => valueIt(it.value[0], true))
-    return `HH('${vv.name}', ${vs.join(', ')})`
-}
-
-const connect = (vs: Sleet.Value[]) => {
-    if (vs.length === 1) return `H(${valueIt(vs[0], true)})`
-    return `HH('concat', ${vs.map(it => valueIt(it, true)).join(', ')})`
+    const vs = vv.attributes.map(it => valueIt.call(this, it.value[0], true))
+    return `${this.f('HH')}('${vv.name}', ${vs.join(', ')})`
 }
 
 export class EchoCompiler extends Compiler {
     doCompile () {
-        this.context.factory('H', 'HH', 'DV', 'SV', 'TN')
         const vs = this.tag.attributes.map(it => it.value).reduce((acc, it) => acc.concat(it))
 
-        const hs = []
-        let avs = []
-
-        vs.forEach(it => {
+        const hs = vs.map(it => {
             if (it.minor === 'helper') {
-                if (avs.length) hs.push(connect(avs))
-                avs = []
-                hs.push(valueIt(it, false))
-                return
+                return valueIt.call(this, it)
             }
-            avs.push(it)
+            if (it.minor === 'identifier') {
+                return `${this.f('H')}('${it.value}')`
+            }
+            return `'${it.value}'`
         })
-        if (avs.length) hs.push(connect(avs))
 
-        this.context.init(`const ${this.id} = TN(${hs.join(', ')})`)
+        this.context.init(`const ${this.id} = ${this.f('TX')}(${hs.join(', ')})`)
     }
 }
