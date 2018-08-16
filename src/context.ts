@@ -25,12 +25,12 @@ export class Context {
         this.ctx = ctx
     }
 
-    create (tag: Tag, parent: Compiler) {
+    create (tag: Tag, parent: Compiler, ignoreSetting = false) {
         if (tag.name === 'module') return new ModuleCompiler(this, tag, parent)
         if (tag.name === 'view') return new ViewCompiler(this, tag, parent)
         if (tag.name === '|') return new TextCompiler(this, tag, parent)
         if (tag.name === 'region') return new RegionCompiler(this, tag, parent)
-        if (tag.setting) {
+        if (tag.setting && !ignoreSetting) {
             if (tag.setting.name === 'each') return new EachCompiler(this, tag, parent)
             if (tag.setting.name === 'if') return new IfCompiler(this, tag, parent)
         }
@@ -91,6 +91,7 @@ export class Context {
         c.factory = (...args: string[]) => this.factory(...args)
         c.isRoot = false
         c.isView = this.isView
+        c.references = this.references
         c.isReference = (name: string) => this.isReference(name)
         return c
     }

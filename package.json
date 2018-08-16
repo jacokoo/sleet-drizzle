@@ -11,6 +11,7 @@
   "dependencies": {
     "acorn": "^5.7.1",
     "escodegen": "^1.11.0",
+    "html-entities": "^1.2.1",
     "rollup": "^0.63.5",
     "sleet": "^0.1.1"
   }

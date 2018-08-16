@@ -7,11 +7,9 @@ export class ReferenceCompiler extends TagCompiler {
         this.context.factory('REF')
 
         const na = `'${this.tag.name}'`
-        const id = this.tag.id ? `'${this.tag.id}'` : null
-        const bi = `[${this.binds.join(', ')}]`
-        const ev = `[${this.events.join(', ')}]`
-        const ac = `[${this.actions.join(', ')}]`
-        this.context.init(`const ${this.id} = REF(${na}, ${id}, ${bi}, ${ev}, ${ac})`)
+        const id = this.tag.id ? `, '${this.tag.id}'` : ''
+        this.context.init(`const ${this.id} = REF(${na}${id})`)
+        this.inits.forEach(it => this.context.init(it))
 
         this.compileChildren()
     }
@@ -27,9 +25,9 @@ export class ReferenceCompiler extends TagCompiler {
     }
 
     doBind (attr: Sleet.Attribute) {
-        this.context.factory('KV')
-        this.binds.push(attr.name ?
-            `KV('${attr.name}', '${attr.value[0].value}')` :
-            `KV('${attr.value[0].value}')`)
+        this.context.factory('BD')
+        this.inits.push(attr.name ?
+            `BD(${this.id}, '${attr.name}', '${attr.value[0].value}')` :
+            `BD(${this.id}, '${attr.value[0].value}', '${attr.value[0].value}')`)
     }
 }

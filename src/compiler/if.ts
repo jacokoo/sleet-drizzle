@@ -1,6 +1,5 @@
 import { Compiler } from './compiler'
 import { Tag } from '../tag'
-import { TagCompiler } from './tag'
 
 export class IfCompiler extends Compiler {
     trueBlock: Compiler
@@ -10,7 +9,7 @@ export class IfCompiler extends Compiler {
     elseIf = 'elseif'
 
     initChildren () {
-        this.trueBlock = new TagCompiler(this.context, this.tag, this)
+        this.trueBlock = this.context.create(this.tag, this, true)
     }
 
     consumeSibling (tag: Tag, i: number, list: Tag[]): number {

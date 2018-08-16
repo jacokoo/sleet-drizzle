@@ -1,6 +1,5 @@
 import { Compiler } from './compiler'
 import { Tag } from '../tag'
-import { TagCompiler } from './tag'
 import { Context } from '../context'
 
 export class EachCompiler extends Compiler {
@@ -12,7 +11,7 @@ export class EachCompiler extends Compiler {
     initChildren () {
         this.trueId = this.context.nextId()
         this.sub = this.context.sub()
-        this.trueBlock = new TagCompiler(this.sub, this.tag, this)
+        this.trueBlock = this.sub.create(this.tag, this, true)
     }
 
     consumeSibling (tag: Tag, i: number, list: Tag[]): number {

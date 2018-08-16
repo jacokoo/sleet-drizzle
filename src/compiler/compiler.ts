@@ -17,10 +17,11 @@ export abstract class Compiler {
         this.initChildren()
     }
 
-    initChildren () {
+    initChildren (context?: Context) {
         let i = 0
+        const ctx = context || this.context
         while (this.tag.children[i]) {
-            const compiler = this.context.create(this.tag.children[i], this)
+            const compiler = ctx.create(this.tag.children[i], this)
             this.children.push(compiler)
             i = i + 1
             const c = this.tag.children[i]

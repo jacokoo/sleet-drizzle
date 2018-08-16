@@ -1,4 +1,5 @@
 import { Compiler } from './compiler'
+import { Html5Entities as HTML } from 'html-entities'
 
 function valueIt (this: Compiler, value: Sleet.Value, ignoreHeler = false) {
     if (value.minor === 'number' || value.minor === 'boolean') return `${this.f('SV')}(${value.value})`
@@ -22,7 +23,7 @@ export class EchoCompiler extends Compiler {
             if (it.minor === 'identifier') {
                 return `${this.f('H')}('${it.value}')`
             }
-            return `'${it.value}'`
+            return `'${HTML.decode(it.value)}'`
         })
 
         this.context.init(`const ${this.id} = ${this.f('TX')}(${hs.join(', ')})`)

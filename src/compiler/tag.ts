@@ -2,32 +2,26 @@ import { Compiler } from './compiler'
 
 export class TagCompiler extends Compiler {
     statics: string[] = []
-    dynamics: string[] = []
-    binds: string[] = []
-    events: string[] = []
-    actions: string[] = []
+    inits: string[] = []
     type = 'SN'
 
     doCompile () {
         this.tag.attributes.forEach(it => this.doAttribute(it))
 
         const id = this.tag.id ? `'${this.tag.id}'` : null
-        let st = this.statics.join(', ')
         const na = this.tag.name
-
+        const st = this.statics.join(', ')
         this.context.factory(this.type, 'C')
-        if (this.type === 'SN') {
-            if (this.statics.length) {
-                st = ', ' + st
-            }
-            this.context.init(`const ${this.id} = SN('${na}', ${id}${st})`)
-        } else {
-            const dy = this.dynamics.join(', ')
-            const bi = this.binds.join(', ')
-            const ev = this.events.join(', ')
-            const ac = this.actions.join(', ')
-            this.context.init(`const ${this.id} = DN('${na}', ${id}, [${st}], [${dy}], [${bi}], [${ev}], [${ac}])`)
+
+        let str = `const ${this.id} = ${this.type}('${na}'`
+        if (id) str += `, ${id}`
+
+        if (this.statics.length) {
+            if (!id) str += `, null`
+            str  += ', ' + st
         }
+        this.context.init(`${str})`)
+        this.inits.forEach(it => this.context.init(it))
 
         super.doCompile()
     }
@@ -37,6 +31,7 @@ export class TagCompiler extends Compiler {
             if (attr.namespace === 'on') return this.doEvent(attr)
             if (attr.namespace === 'action') return this.doAction(attr)
             if (attr.namespace === 'bind') return this.doBind(attr)
+            if (attr.namespace === 'comp') return this.doComponent(attr)
             throw new SyntaxError(`attribute namespace ${attr.namespace} is not supported`)
         }
 
@@ -46,7 +41,7 @@ export class TagCompiler extends Compiler {
 
         if (attr.value.length === 1 && attr.value[0].minor === 'identifier'
             && (attr.value[0].value as string).slice(0, 5) === 'bind:') {
-                this.binds.push(`${this.f('KV')}('${attr.value[0].value}')`)
+                this.inits.push(`${this.f('BD')}(${this.id}, '${attr.value[0].value}', '${attr.value[0].value}')`)
                 return
         }
 
@@ -55,14 +50,12 @@ export class TagCompiler extends Compiler {
 
     doEvent (attr: Sleet.Attribute) {
         this.type = 'DN'
-        this.context.factory('E')
-        this.events.push(`E${this.eventString(attr)}`)
+        this.inits.push(`${this.f('EV')}${this.eventString(attr)}`)
     }
 
     doAction (attr: Sleet.Attribute) {
         this.type = 'DN'
-        this.context.factory('A')
-        this.actions.push(`A${this.eventString(attr)}`)
+        this.inits.push(`${this.f('AC')}${this.eventString(attr)}`)
     }
 
     eventString (attr: Sleet.Attribute) {
@@ -82,19 +75,26 @@ export class TagCompiler extends Compiler {
                 return kk ? `AT('${kk}', DV('${vv.value}'))` : `NDA('${vv.value}')`
             }).join(', ')
 
-            return `('${attr.name}', '${name}', ${vs})`
+            return `(${this.id}, '${attr.name}', '${name}', ${vs})`
         }
 
-        return `('${attr.name}', '${v.value}')`
+        return `(${this.id}, '${attr.name}', '${v.value}')`
     }
 
     doBind (attr: Sleet.Attribute) {
         this.type = 'DN'
-        this.context.factory('B')
-        this.binds.push(`B('${attr.name}', '${attr.value[0].value}')`)
+        this.inits.push(`${this.f('BD')}(${this.id}, '${attr.name}', '${attr.value[0].value}')`)
     }
 
     doDynamic (attr: Sleet.Attribute) {
+        this.inits.push(`${this.f('DA')}(${this.id}, ${this.attributeToHelpers(attr)})`)
+    }
+
+    doComponent (attr: Sleet.Attribute) {
+        this.inits.push(`${this.f('CO')}(${this.id}, ${this.attributeToHelpers(attr)})`)
+    }
+
+    attributeToHelpers (attr: Sleet.Attribute) {
         this.type = 'DN'
         const {name, value} = attr
         const helpers = []
@@ -123,8 +123,7 @@ export class TagCompiler extends Compiler {
             }
         })
 
-        this.context.factory('DA')
-        this.dynamics.push(`DA('${name}', ${helpers.join(', ')})`)
+        return `'${name}', ${helpers.join(', ')}`
     }
 
     doStatic (attr: Sleet.Attribute) {
