@@ -7,7 +7,7 @@ view(a-a)
         div(class='cde')&else(a) > h3 a
     section(on:a=hello(a))
         input(bind:value=todo.name)
-        a-a(todos)&if(todo.name)
+        a-a(todos hello=1)&if(todo.name)
         echo('a', b if(a a) c + d + if(c eq d e) 1 true false)
         echo('a&nbsp;')
         echo(b)
