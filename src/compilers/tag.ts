@@ -1,65 +1,32 @@
-import { AbstractCompiler, Tag, Context, NodeType, SleetNode, SleetStack, Compiler } from 'sleet'
+import { AbstractCompiler, Tag, Context, Attribute, StringValue, AttributeGroup } from 'sleet'
+import { next, put } from './tag-factory'
 
-export function put (stack: SleetStack, name: string) {
-    const o = stack.note('factories') as string[]
-    o.push(name)
-}
+export class NormalTagCompiler extends AbstractCompiler<Tag> {
+    compile (ctx: Context) {
+        const id = next(this.stack)
 
-export function id (stack: SleetStack) {
-    const o = stack.note('counter') as {count: number}
-    return `o${o.count}`
-}
+        const last = this.stack.last()!
+        const subs = this.mergeGroup().attributes.map(it => ctx.compile(it, this.stack, -1))
+        const name = last.note.isDynamic ? 'DN' : 'SN'
+        put(this.stack, name)
+        ctx.push(`const ${id} = ${name}('${this.node.name}'`)
+        if (this.node.hash) ctx.push(`, '${this.node.hash}'`)
+        ctx.push(')')
+        subs.forEach(it => it.mergeUp())
+    }
 
-export function next (stack: SleetStack) {
-    const o = stack.note('counter') as {count: number}
-    o.count ++
-    return `o${o.count}`
-}
-
-export class TagCompilerFactory {
-    static type: NodeType.Tag
-    static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
-        if (!(node as Tag).extra) return new NormalTagCompiler(node as Tag, stack)
-
-        const last = stack.last()
-        if (!last || last.node.type !== NodeType.TagExtra) {
-            return new TagExtraCompiler(node as Tag, stack)
+    mergeGroup (): AttributeGroup {
+        if (this.node.dots) {
+            const location = {
+                start: {line: 0, column: 0, offset: 0},
+                end: {line: 0, column: 0, offset: 0}
+            }
+            const vs = this.node.dots.map(it => new StringValue(it, location))
+            const group = new AttributeGroup([new Attribute(null, 'class', vs, location)], null, location)
+            if (this.node.attributeGroups.length) group.merge(this.node.attributeGroups[0])
+            return group
         }
 
-        return new NormalTagCompiler(node as Tag, stack)
-    }
-}
-
-class NormalTagCompiler extends AbstractCompiler<Tag> {
-    compile (context: Context) {
-    }
-}
-
-class TagExtraCompiler extends AbstractCompiler<Tag> {
-    compile (context: Context, elseBlock?: Tag) {
-        const to = next(this.stack)
-        const sub = context.compile(this.node, this.stack)!
-        context.eol().indent().push(`const ${to} = () => {`)
-        sub.mergeUp()
-        context.eol().indent(1).push(`return ${id(this.stack)}`)
-        context.eol().indent().push(`}`)
-
-        let fo: string = ''
-        if (elseBlock) {
-            context.compileUp(elseBlock, this.stack)
-            fo = id(this.stack)
-        }
-        const eo = id(this.stack)
-
-    }
-}
-
-export class CommentCompiler extends AbstractCompiler<Tag> {
-    static type: NodeType.Tag
-    static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
-        if ((node as Tag).name === '#') return new CommentCompiler(node as Tag, stack)
-    }
-
-    compile (context: Context) {
+        return this.node.attributeGroups[0]
     }
 }
