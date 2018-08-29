@@ -1,6 +1,7 @@
 import {
     Compiler, AbstractCompiler, StringValue, Context, NodeType,
-    SleetNode, SleetStack, NumberValue, BooleanValue, NullValue, IdentifierValue, CompareOperatorValue
+    SleetNode, SleetStack, NumberValue, BooleanValue, NullValue,
+    IdentifierValue, CompareOperatorValue, TransformValue, Transformer
 } from 'sleet'
 import { put } from './tag-factory'
 
@@ -73,5 +74,52 @@ export class CompareOperatorValueCompiler extends AbstractCompiler<CompareOperat
     compile (ctx: Context) {
         put(this.stack, 'SV')
         ctx.push(`SV('${this.node.value}')`)
+    }
+}
+
+export class TransformValueCompiler extends AbstractCompiler<TransformValue> {
+    static type: NodeType.TransformValue
+    static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
+        return new TransformValueCompiler(node as TransformValue, stack)
+    }
+
+    compile (ctx: Context) {
+        put(this.stack, 'TV')
+        ctx.push('TV(').push(this.node.value)
+        if (this.node.end) {
+            ctx.push(', ')
+            ctx.compileUp(this.node.end, this.stack)
+        }
+
+        if (!this.node.end && this.node.transformers.length) {
+            ctx.push(', null')
+        }
+        this.node.transformers.forEach(it => {
+            ctx.push(', ')
+            if (typeof it === 'string') {
+                put(this.stack, 'TI')
+                ctx.push(`TI(${it})`)
+                return
+            }
+            ctx.compileUp(it, this.stack)
+        })
+        ctx.push(')')
+    }
+}
+
+export class TransformerCompiler extends AbstractCompiler<Transformer> {
+    static type: NodeType.Transformer
+    static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
+        return new TransformerCompiler(node as Transformer, stack)
+    }
+
+    compile (ctx: Context) {
+        put(this.stack, 'TI')
+        ctx.push('TI(').push(this.node.name)
+        this.node.params.forEach(it => {
+            ctx.push(', ')
+            ctx.compileUp(it, this.stack)
+        })
+        ctx.push(')')
     }
 }
