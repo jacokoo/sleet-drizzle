@@ -1,9 +1,12 @@
 const fs = require('fs')
 const {compile} = require('sleet')
-const {overrideContext} = require('../dist/sleet-drizzle')
+const {plugin} = require('../lib')
 
 const input = fs.readFileSync(`${__dirname}/test.sleet`, 'utf-8')
 console.log(input)
 
-console.log(compile(input, {drizzle: {overrideContext}}).content)
+const code = compile(input, {plugins: {drizzle: plugin}}).code
+console.log(code)
+
+fs.writeFileSync(`${__dirname}/test-output.js`, code, 'utf-8')
 

@@ -3,10 +3,10 @@ import {
     SleetNode, SleetStack, NumberValue, BooleanValue, NullValue,
     IdentifierValue, CompareOperatorValue, TransformValue, Transformer
 } from 'sleet'
-import { put } from './tag-factory'
+import { put } from './tag'
 
 export class QuotedStringCompiler extends AbstractCompiler<StringValue> {
-    static type: NodeType.StringValue
+    static type = NodeType.StringValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new QuotedStringCompiler(node as StringValue, stack)
     }
@@ -18,7 +18,7 @@ export class QuotedStringCompiler extends AbstractCompiler<StringValue> {
 }
 
 export class NumberValueCompiler extends AbstractCompiler<NumberValue> {
-    static type: NodeType.NumberValue
+    static type = NodeType.NumberValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new NumberValueCompiler(node as NumberValue, stack)
     }
@@ -30,7 +30,7 @@ export class NumberValueCompiler extends AbstractCompiler<NumberValue> {
 }
 
 export class BooleanValueCompiler extends AbstractCompiler<BooleanValue> {
-    static type: NodeType.BooleanValue
+    static type = NodeType.BooleanValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new BooleanValueCompiler(node as BooleanValue, stack)
     }
@@ -42,7 +42,7 @@ export class BooleanValueCompiler extends AbstractCompiler<BooleanValue> {
 }
 
 export class NullValueCompiler extends AbstractCompiler<NullValue> {
-    static type: NodeType.NullValue
+    static type = NodeType.NullValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new NullValueCompiler(node as NullValue, stack)
     }
@@ -54,7 +54,7 @@ export class NullValueCompiler extends AbstractCompiler<NullValue> {
 }
 
 export class IdentifierValueCompiler extends AbstractCompiler<IdentifierValue> {
-    static type: NodeType.IdentifierValue
+    static type = NodeType.IdentifierValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new IdentifierValueCompiler(node as IdentifierValue, stack)
     }
@@ -66,9 +66,9 @@ export class IdentifierValueCompiler extends AbstractCompiler<IdentifierValue> {
 }
 
 export class CompareOperatorValueCompiler extends AbstractCompiler<CompareOperatorValue> {
-    static type: NodeType.CompareOperator
+    static type = NodeType.CompareOperator
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
-        return new IdentifierValueCompiler(node as CompareOperatorValue, stack)
+        return new CompareOperatorValueCompiler(node as CompareOperatorValue, stack)
     }
 
     compile (ctx: Context) {
@@ -78,7 +78,7 @@ export class CompareOperatorValueCompiler extends AbstractCompiler<CompareOperat
 }
 
 export class TransformValueCompiler extends AbstractCompiler<TransformValue> {
-    static type: NodeType.TransformValue
+    static type = NodeType.TransformValue
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new TransformValueCompiler(node as TransformValue, stack)
     }
@@ -108,7 +108,7 @@ export class TransformValueCompiler extends AbstractCompiler<TransformValue> {
 }
 
 export class TransformerCompiler extends AbstractCompiler<Transformer> {
-    static type: NodeType.Transformer
+    static type = NodeType.Transformer
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new TransformerCompiler(node as Transformer, stack)
     }

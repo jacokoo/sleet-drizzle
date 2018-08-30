@@ -1,12 +1,28 @@
-import { Compiler } from './compiler'
+import { AbstractCompiler, Tag, NodeType, SleetNode, SleetStack, Compiler, Context } from 'sleet'
 import {parse} from 'acorn'
 import {generate} from 'escodegen'
 
-export class ScriptCompiler extends Compiler {
-    references: string[]
-    body: any
-    initChildren () {
-        const source = this.tag.sleet.text.join('\n')
+export class ScriptCompiler extends AbstractCompiler<Tag> {
+    static type = NodeType.Tag
+    static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
+        const tag = node as Tag
+        if (tag.name === 'script' && tag.indent === 0) return new ScriptCompiler(tag, stack)
+    }
+
+    compile (context: Context) {
+        const body = this.check()
+        const imports = this.stack.note('imports') as string[]
+        body.forEach(it => {
+            if (it.type.slice(0, 6) === 'Import') {
+                imports.push(generate(it))
+                return
+            }
+            context.eol().indent().push(generate(it))
+        })
+    }
+
+    check () {
+        const source = this.getContent()
         const {body} = parse(source, {sourceType: 'module', ecmaVersion: 9})
         if (body.some(it => it.type === 'ExportAllDeclaration' || it.type === 'ExportNamedDeclaration')) {
             throw new SyntaxError('can only export default object')
@@ -20,11 +36,18 @@ export class ScriptCompiler extends Compiler {
         }
 
         const {properties} = b.declaration
-        const items = properties.find(it => it.key.name === 'items' || it.key.value === 'items')
-        this.references = this.getReferences(items && items.value)
-        if (this.references.some(it => it.indexOf('-') === -1)) {
-            throw new SyntaxError('The key of view or module reference should ' +
-                'have at least one dash(-) char to differentiate from HTML tag')
+        if (this.stack.note('isModule')) {
+            const items = properties.find(it => it.key.name === 'items' || it.key.value === 'items')
+            const references = this.getReferences(items && items.value)
+            if (references.some(it => it.indexOf('-') === -1)) {
+                throw new SyntaxError('The key of view or module reference should ' +
+                    'have at least one dash(-) char to differentiate from HTML tag')
+            }
+
+            const refs = this.stack.note('references') as string[]
+            references.forEach(it => {
+                if (refs.indexOf(it) === -1) refs.push(it)
+            })
         }
 
         b.declaration.properties.push({
@@ -34,23 +57,7 @@ export class ScriptCompiler extends Compiler {
             value: { type: 'Identifier', name: 'template' }
         })
 
-        this.body = body
-    }
-
-    doCompile () {
-        this.body.forEach(it => {
-            if (it.type.slice(0, 6) === 'Import') {
-                this.context.start(generate(it))
-                return
-            }
-            if (it.type === 'ExportDefaultDeclaration') {
-                this.context.connect('')
-                this.context.connect(generate(it))
-                return
-            }
-
-            this.context.init(generate(it))
-        })
+        return body
     }
 
     getReferences (items): string[] {
@@ -97,5 +104,10 @@ export class ScriptCompiler extends Compiler {
     getPropertyKey (prop): string {
         if (prop.key.type === 'Literal') return prop.key.value
         return prop.key.name
+    }
+
+    getContent () {
+        return this.node.children.filter(it => it.name === '|').map(it => it.text.map(line =>
+            line.map(item => item.toHTMLString()).join('')).join('\n')).join('\n')
     }
 }

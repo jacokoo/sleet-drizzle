@@ -1,32 +1,8 @@
 #! drizzle
 
-view(a-a)
-    section(class='todo')&each(todos as todo)
-        div(class='abc')&if(todo.name eq 'abc') > h1 h1
-        div(class='bcd')&elseif(todo.name eq 'bcd') > h2 &nbsp;h2
-        div(class='cde')&else(a) > h3 a
-    section(on:a=hello(a))
-        input(bind:value=todo.name)
-        a-a(todos hello=1)&if(todo.name)
-        echo('a', b if(a a) c + d + if(c eq d e) 1 true false)
-        echo('a&nbsp;')
-        echo(b)
+view
+    span a $a
 
-script.
-    const a = {a: 1, b: 2}
-    const bb = {...a, c: 3}
-    function b() {
-        console.log(a)
-        return a
-    }
-    export default {
-        items: {
-            'views': ['a-a', 'b-b', 'c-c'],
-            refs: ['abc-d', 'def-a'],
-            modules: {
-                'abc-d': 'module/name',
-                'a-s': 'hello'
-            }
-        }
-    }
-    const abc = 10
+script..
+export default {
+}

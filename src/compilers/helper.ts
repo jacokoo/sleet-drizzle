@@ -1,19 +1,34 @@
 import { HelperAttribute, AbstractCompiler, NodeType, SleetNode, SleetStack, Compiler, Context, Helper } from 'sleet'
-import { put } from './tag-factory'
+import { put } from './tag'
 
 export class HelperAttributeCompiler extends AbstractCompiler<HelperAttribute> {
-    static type: NodeType.HelperAttribute
+    static type = NodeType.HelperAttribute
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
-        return new HelperAttributeCompiler(node as HelperAttribute, stack)
+        const ignore = stack.last()!.node.type !== NodeType.Attribute
+        return new HelperAttributeCompiler(node as HelperAttribute, stack, ignore)
+    }
+
+    ignoreName: boolean
+    constructor (node: HelperAttribute, stack: SleetStack, ignoreName: boolean) {
+        super(node, stack)
+        this.ignoreName = ignoreName
     }
 
     compile (ctx: Context) {
+        if (this.ignoreName) {
+            ctx.compileUp(this.node.value, this.stack)
+            return
+        }
+
+        put(this.stack, 'AT')
+        ctx.push(`AT('${this.node.name || ''}', `)
         ctx.compileUp(this.node.value, this.stack)
+        ctx.push(')')
     }
 }
 
 export class HelperCompiler extends AbstractCompiler<Helper> {
-    static type: NodeType.Helper
+    static type = NodeType.Helper
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         return new HelperCompiler(node as Helper, stack)
     }
@@ -34,7 +49,9 @@ export class HelperCompiler extends AbstractCompiler<Helper> {
         this.node.attributes.forEach((it, idx) => {
             if (idx) ctx.push(', ')
             put(this.stack, 'H')
-            ctx.push(`H(${ctx.compileUp(it, this.stack)})`)
+            ctx.push('H(')
+            ctx.compileUp(it, this.stack)
+            ctx.push(')')
         })
     }
 }
