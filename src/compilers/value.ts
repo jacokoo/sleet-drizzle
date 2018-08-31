@@ -85,7 +85,7 @@ export class TransformValueCompiler extends AbstractCompiler<TransformValue> {
 
     compile (ctx: Context) {
         put(this.stack, 'TV')
-        ctx.push('TV(').push(this.node.value)
+        ctx.push(`TV('${this.node.value}'`)
         if (this.node.end) {
             ctx.push(', ')
             ctx.compileUp(this.node.end, this.stack)

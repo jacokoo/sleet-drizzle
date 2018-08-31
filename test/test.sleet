@@ -1,8 +1,35 @@
 #! drizzle
 
-view
-    span a $a
+module > .main-content > .tile.is-ancestor.h100
+    .tile.is-6.is-parent.br
+        .tile.is-child.editor.is-12
+            file-tab(
+                tabs
+                action:change=switchFile(event)
+                action:rename=renameFile(event)
+            )
+            code-editor(code action:change=updateCode(event name | 'true'))
+            .operators > c-dropdown > .dropdown-item(d=2) > p abc
 
-script..
-export default {
-}
+    .tile.is-6.is-vertical
+        .tile.is-parent > .tile.is-child.is-relative > view-show(files json changed)
+        .tile.is-parent.bt > .tile.is-child.editor > view-json(json)
+
+script.
+    import {compile} from 'sleet'
+
+    const examples = {
+        [hw.code]: hw,
+        [bg.code]: bg
+    }
+
+    export default {
+        items: {
+            views: ['view-json', 'view-show'],
+            modules: {
+                'file-tab': 'repl/tab',
+                'code-editor': 'repl/editor',
+                'c-dropdown': 'component/dropdown'
+            }
+        }
+    }

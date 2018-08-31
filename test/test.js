@@ -8,5 +8,5 @@ console.log(input)
 const code = compile(input, {plugins: {drizzle: plugin}}).code
 console.log(code)
 
-fs.writeFileSync(`${__dirname}/test-output.js`, code, 'utf-8')
+fs.writeFileSync(`${__dirname}/test-output.ts`, code, 'utf-8')
 

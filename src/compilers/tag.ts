@@ -106,8 +106,8 @@ export class NormalTagCompiler extends AbstractCompiler<Tag> {
     compile (ctx: Context) {
         const ii = next(this.stack)
 
-        const subs = this.mergeGroup().attributes.map(it => ctx.compile(it, this.stack, -1))
         const name = this.nodeType()
+        const subs = this.mergeGroup().attributes.map(it => ctx.compile(it, this.stack, -1))
         put(this.stack, name)
         ctx.eol().indent().push(`const ${ii} = ${name}('${this.node.name || 'div'}'`)
         if (this.node.hash) ctx.push(`, '${this.node.hash}'`)
@@ -180,6 +180,7 @@ class ReferenceCompiler extends NormalTagCompiler {
     }
 
     nodeType () {
+        this.stack.last()!.note.isReference = true
         return 'REF'
     }
 }

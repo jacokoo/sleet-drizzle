@@ -45,12 +45,13 @@ export const plugin = {
             imports: [],
             isModule: nodes[0].name === 'module'
         }
+
         const stack = new SleetStack([], note)
-        const sub = context.compile(nodes[0], stack, -1)
         let script
         if (nodes[1]) {
             script = context.compile(nodes[1], stack, -1)
         }
+        const sub = context.compile(nodes[0], stack, -1)
 
         note.imports.forEach(it => context.eol().push(it))
         context.eol().push(`import { factory } from 'drizzlejs'`)

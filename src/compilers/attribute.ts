@@ -1,6 +1,6 @@
 import {
     AbstractCompiler, NodeType, SleetNode, SleetStack, Compiler,
-    Context, Attribute, Helper, SleetValue, StringValue
+    Context, Attribute, Helper, SleetValue, StringValue, IdentifierValue
 } from 'sleet'
 import { put, id } from './tag'
 
@@ -9,56 +9,83 @@ export class AttributeCompilerFactory extends AbstractCompiler<Attribute> {
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         const attr = node as Attribute
 
+        const ref = stack.last(NodeType.Tag)!.note.isReference
         if (attr.namespace) {
             if (attr.namespace === 'on') return new EventCompiler(attr, stack)
             if (attr.namespace === 'action') return new ActionCompiler(attr, stack)
-            if (attr.namespace === 'comp') return new ComponentCompiler(attr, stack)
+            // TODO throw if ref is true
+            if (attr.namespace === 'comp' && !ref) return new ComponentCompiler(attr, stack)
             if (attr.namespace === 'bind') return new BindingCompiler(attr, stack)
         }
 
-        return new AttributeCompiler(node as Attribute, stack)
+        const dynamic = attr.values.some(it => it.type === NodeType.IdentifierValue || it.type === NodeType.Helper)
+        if (dynamic) {
+            return ref ? new ReferenceDynamicAttributeCompiler(attr, stack) : new DynamicAttributeCompiler(attr, stack)
+        }
+        return new StaticAttributeCompiler(attr, stack)
     }
 
     compile () {}
 }
 
-export class AttributeCompiler extends AbstractCompiler<Attribute> {
+// no helper, only use first value and only can be identifier value
+class ReferenceDynamicAttributeCompiler extends AbstractCompiler<Attribute> {
     compile (ctx: Context) {
-        const dynamic = this.node.values.some(it =>
-            it.type === NodeType.IdentifierValue || it.type === NodeType.Helper)
+        put(this.stack, 'MP')
+        ctx.push(`MP(${id(this.stack)}`)
 
-        const name = dynamic ? 'DA' : 'SA'
+        const v = this.node.values[0]
+        if (!v || v.type !== NodeType.IdentifierValue) {
+            // TODO throw
+        }
+
+        const vv = (v as IdentifierValue).value
+        ctx.push(`, '${vv}'`)
+        if (this.node.name) ctx.push(`, ${this.node.name}`)
+        ctx.push(')')
+    }
+}
+
+class DynamicAttributeCompiler extends AbstractCompiler<Attribute> {
+    compile (ctx: Context) {
+        this.stack.last(NodeType.Tag)!.note.isDynamic = true
+
         put(this.stack, name)
+        ctx.push(`DA(${id(this.stack)}, '${this.node.name || ''}'`)
 
-        ctx.push(name).push(`(${id(this.stack)}, '${this.node.name || ''}'`)
-        if (dynamic) {
-            this.stack.last(NodeType.Tag)!.note.isDynamic = true
-            this.node.values.forEach(it => {
-                ctx.push(', ')
-                if (it.type !== NodeType.Helper) {
-                    put(this.stack, 'H')
-                    ctx.push('H(')
-                }
-                ctx.compileUp(it, this.stack)
-                if (it.type !== NodeType.Helper) ctx.push(')')
-            })
-        } else {
-            if (this.node.values.length === 1) {
-                const v = this.node.values[0]
-                if (v instanceof StringValue) ctx.push(`, '${v.value}'`)
-                else ctx.push(`, ${(v as SleetValue<any>).value}`)
-            } else {
-                const v = this.node.values.map(it => (it as SleetValue<any>).value)
-                    .join(this.node.name === 'class' ? ' ' : '')
-                ctx.push(`, '${v}'`)
+        this.node.values.forEach(it => {
+            ctx.push(', ')
+            if (it.type !== NodeType.Helper) {
+                put(this.stack, 'H')
+                ctx.push('H(')
             }
+            ctx.compileUp(it, this.stack)
+            if (it.type !== NodeType.Helper) ctx.push(')')
+        })
+        ctx.push(')')
+    }
+}
+
+class StaticAttributeCompiler extends AbstractCompiler<Attribute> {
+    compile (ctx: Context) {
+        put(this.stack, 'SA')
+        ctx.push(`SA(${id(this.stack)}, '${this.node.name || ''}'`)
+
+        if (this.node.values.length === 1) {
+            const v = this.node.values[0]
+            if (v instanceof StringValue) ctx.push(`, '${v.value}'`)
+            else ctx.push(`, ${(v as SleetValue<any>).value}`)
+        } else {
+            const v = this.node.values.map(it => (it as SleetValue<any>).value)
+                .join(this.node.name === 'class' ? ' ' : '')
+            ctx.push(`, '${v}'`)
         }
         ctx.push(')')
     }
 }
 
 // can only bind a identifier value, TODO support obj[attri.bute]
-export class BindingCompiler extends AbstractCompiler<Attribute> {
+class BindingCompiler extends AbstractCompiler<Attribute> {
     compile (ctx: Context) {
         this.stack.last(NodeType.Tag)!.note.isDynamic = true
         put(this.stack, 'BD')
@@ -68,12 +95,12 @@ export class BindingCompiler extends AbstractCompiler<Attribute> {
         }
 
         const vv = v ? v.toHTMLString() : this.node.name
-        ctx.push(`BD(${id(this.stack)}, ${this.node.name}, ${vv})`)
+        ctx.push(`BD(${id(this.stack)}, '${this.node.name}', '${vv}')`)
     }
 }
 
 // only use first value, could be identifier or helper
-export class EventCompiler extends AbstractCompiler<Attribute> {
+class EventCompiler extends AbstractCompiler<Attribute> {
     name = 'EV'
     compile (ctx: Context) {
         this.stack.last(NodeType.Tag)!.note.isDynamic = true
@@ -100,11 +127,11 @@ export class EventCompiler extends AbstractCompiler<Attribute> {
     }
 }
 
-export class ActionCompiler extends EventCompiler {
+class ActionCompiler extends EventCompiler {
     name = 'AC'
 }
 
-export class ComponentCompiler extends AbstractCompiler<Attribute> {
+class ComponentCompiler extends AbstractCompiler<Attribute> {
     compile (ctx: Context) {
         this.stack.last(NodeType.Tag)!.note.isDynamic = true
         put(this.stack, 'CO')

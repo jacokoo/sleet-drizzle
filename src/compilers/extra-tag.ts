@@ -16,7 +16,7 @@ export class EachTagCompiler extends AbstractCompiler<Tag> {
         let fid: string = ''
         if (elseBlock) {
             const c = context.create(elseBlock, stack)!
-            const s = context.sub()
+            const s = context.sub(-1)
             fid = c.compile(s)
             s.mergeUp()
             fid = `, ${fid}`
@@ -27,8 +27,9 @@ export class EachTagCompiler extends AbstractCompiler<Tag> {
 
         const iid = next(stack)
         context.push(`const ${iid} = EACH([`)
-        context.push(this.node.extra.values.map(it => it.toHTMLString()).join(', '))
-        context.push('], ', ii, fid)
+        // TODO check value type
+        context.push(this.node.extra.values.map(it => `'${it.toHTMLString()}'`).join(', '))
+        context.push('], ', ii, fid, ')')
         return iid
     }
 }
@@ -51,12 +52,12 @@ export class IfTagCompiler extends AbstractCompiler<Tag> {
         const tid = c.compile(s)
         s.mergeUp()
 
-        put(stack, 'IFC')
+        put(stack, 'IF')
         const ii = next(this.stack)
-        ctx.eol().indent().push(`const ${ii} = IFC([`)
+        ctx.eol().indent().push(`const ${ii} = IF([`)
         this.node.extra.values.forEach((it, idx) => {
             ctx.compileUp(it, stack)
-            if (idx) ctx.push(', ')
+            ctx.push(', ')
         })
         ctx.pop()
         ctx.push(`], ${tid}${eid})`)
