@@ -1,5 +1,5 @@
 import { AbstractCompiler, Tag, NodeType, SleetNode, SleetStack, Compiler, Context } from 'sleet'
-import { compileNodes } from './tag'
+import { compileNodes } from './util'
 
 abstract class RootCompiler extends AbstractCompiler<Tag> {
     static type = NodeType.Tag

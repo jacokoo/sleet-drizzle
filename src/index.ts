@@ -51,7 +51,7 @@ export const plugin = {
         if (nodes[1]) {
             script = context.compile(nodes[1], stack, -1)
         }
-        const sub = context.compile(nodes[0], stack, -1)
+        const sub = context.compile(nodes[0], stack, -1)!
 
         note.imports.forEach(it => context.eol().push(it))
         context.eol().push(`import { factory } from 'drizzlejs'`)

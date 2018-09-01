@@ -3,7 +3,7 @@ import {
     SleetNode, SleetStack, NumberValue, BooleanValue, NullValue,
     IdentifierValue, CompareOperatorValue, TransformValue, Transformer
 } from 'sleet'
-import { put } from './tag'
+import { put } from './util'
 
 export class QuotedStringCompiler extends AbstractCompiler<StringValue> {
     static type = NodeType.StringValue

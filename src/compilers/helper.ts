@@ -1,5 +1,5 @@
 import { HelperAttribute, AbstractCompiler, NodeType, SleetNode, SleetStack, Compiler, Context, Helper } from 'sleet'
-import { put } from './tag'
+import { put } from './util'
 
 export class HelperAttributeCompiler extends AbstractCompiler<HelperAttribute> {
     static type = NodeType.HelperAttribute

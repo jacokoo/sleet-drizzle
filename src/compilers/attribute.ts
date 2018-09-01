@@ -2,7 +2,7 @@ import {
     AbstractCompiler, NodeType, SleetNode, SleetStack, Compiler,
     Context, Attribute, Helper, SleetValue, StringValue, IdentifierValue
 } from 'sleet'
-import { put, id } from './tag'
+import { put, id } from './util'
 
 export class AttributeCompilerFactory extends AbstractCompiler<Attribute> {
     static type = NodeType.Attribute

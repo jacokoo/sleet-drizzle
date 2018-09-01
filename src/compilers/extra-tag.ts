@@ -1,9 +1,9 @@
 import { AbstractCompiler, Tag, Context } from 'sleet'
-import { next, put } from './tag'
+import { next, put } from './util'
 
 export class EachTagCompiler extends AbstractCompiler<Tag> {
-    compile (context: Context, elseBlock?: Tag) {
-        const stack = this.stack.concat(this.node.extra)
+    compile (context: Context, elseBlock: Tag): any {
+        const stack = this.stack.concat(this.node.extra!)
         const ii = next(this.stack)
         const compiler = context.create(this.node, stack)!
         const sub = context.sub()
@@ -28,7 +28,7 @@ export class EachTagCompiler extends AbstractCompiler<Tag> {
         const iid = next(stack)
         context.push(`const ${iid} = EACH([`)
         // TODO check value type
-        context.push(this.node.extra.values.map(it => `'${it.toHTMLString()}'`).join(', '))
+        context.push(this.node.extra!.values.map(it => `'${it.toHTMLString()}'`).join(', '))
         context.push('], ', ii, fid, ')')
         return iid
     }
@@ -36,7 +36,7 @@ export class EachTagCompiler extends AbstractCompiler<Tag> {
 
 export class IfTagCompiler extends AbstractCompiler<Tag> {
     compile (ctx: Context, ...elseBlocks: Tag[]) {
-        const stack = this.stack.concat(this.node.extra)
+        const stack = this.stack.concat(this.node.extra!)
 
         let eid = ''
         if (elseBlocks.length) {
@@ -55,7 +55,7 @@ export class IfTagCompiler extends AbstractCompiler<Tag> {
         put(stack, 'IF')
         const ii = next(this.stack)
         ctx.eol().indent().push(`const ${ii} = IF([`)
-        this.node.extra.values.forEach((it, idx) => {
+        this.node.extra!.values.forEach((it, idx) => {
             ctx.compileUp(it, stack)
             ctx.push(', ')
         })

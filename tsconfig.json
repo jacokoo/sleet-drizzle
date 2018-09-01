@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
+    "strictNullChecks": true,
     "module": "commonjs",
+    "removeComments": true,
+    "preserveConstEnums": true,
     "target": "es6",
     "outDir": "lib",
-    "diagnostics": true,
-    "noImplicitThis": true,
-    "noEmitOnError": true,
-    "moduleResolution": "node",
     "declaration": true,
-    "sourceMap": true
+    "moduleResolution": "node"
   },
   "include": [
     "src/**/*"

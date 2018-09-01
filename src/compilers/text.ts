@@ -3,7 +3,7 @@ import {
     Compiler, Context, StaticText, DynamicText
 } from 'sleet'
 import { Html5Entities as HTML } from 'html-entities'
-import { next, put } from './tag'
+import { next, put } from './util'
 
 export class TextCompiler extends AbstractCompiler<Tag> {
     static type = NodeType.Tag

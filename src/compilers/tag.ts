@@ -3,81 +3,11 @@ import {
     Compiler, AttributeGroup, StringValue, Attribute
 } from 'sleet'
 import { EachTagCompiler, IfTagCompiler } from './extra-tag'
-
-export function put (stack: SleetStack, name: string) {
-    const o = stack.note('factories') as string[]
-    if (o.indexOf(name) === -1) o.push(name)
-}
-
-export function next (stack: SleetStack) {
-    const o = stack.note('counter') as {count: number}
-    o.count ++
-    return `o${o.count}`
-}
-
-export function id (stack: SleetStack) {
-    const o = stack.note('counter') as {count: number}
-    return `o${o.count}`
-}
-
-export function compileNodes (ctx: Context, stack: SleetStack, tags: Tag[]): string[] {
-    let i = 0
-    const ids: string[] = []
-
-    while (i < tags.length) {
-        const tag = tags[i]
-        let n = tags[i + 1]
-        const { start } = tag.location
-
-        if (!n || !n.extra || (n.extra.name !== 'else' && n.extra.name !== 'elseif')) {
-            i ++
-            const c = ctx.create(tag, stack)!
-            const s = ctx.sub(-1)
-            ids.push(c.compile(s))
-            s.mergeUp()
-            continue
-        }
-
-        if (!tag.extra) {
-            throw new SyntaxError(`not paired else/elseif, line: ${start.line}, column: ${start.column}`)
-        }
-
-        const sub = ctx.sub(-1)
-        if (tag.extra.name === 'each') {
-            if (n.extra.name !== 'else') {
-                throw new SyntaxError(`each can not have elseif block, line: ${start.line}, column: ${start.column}`)
-            }
-
-            const compiler = ctx.create(tag, stack)
-            ids.push(compiler.compile(sub, n))
-            sub.mergeUp()
-            i += 2
-            continue
-        }
-
-        const blocks = []
-        i ++
-        while (n && n.extra && n.extra.name === 'elseif') {
-            blocks.push(n)
-            i ++
-            n = tags[i]
-        }
-
-        if (n && n.extra && n.extra.name === 'else') {
-            blocks.push(n)
-            i ++
-        }
-        const cc = ctx.create(tag, stack)
-        ids.push(cc.compile(sub, ...blocks))
-        sub.mergeUp()
-    }
-
-    return ids.filter(it => !!it)
-}
+import { next, compileNodes, put } from './util'
 
 const create = (tag: Tag, stack: SleetStack): Compiler | undefined => {
     const refs = stack.note('references') as string[]
-    if (refs.indexOf(tag.name) !== -1) return new ReferenceCompiler(tag, stack)
+    if (tag.name && refs.indexOf(tag.name) !== -1) return new ReferenceCompiler(tag, stack)
     return new NormalTagCompiler(tag, stack)
 }
 
@@ -88,7 +18,7 @@ export class NormalTagCompiler extends AbstractCompiler<Tag> {
         if (!tag.extra) return create(tag, stack)
 
         const last = stack.last()
-        if (last.node === node) {
+        if (last && last.node === node) {
             return create(tag, stack)
         }
         if (!last || last.node.type !== NodeType.TagExtra) {
@@ -113,6 +43,7 @@ export class NormalTagCompiler extends AbstractCompiler<Tag> {
         if (this.node.hash) ctx.push(`, '${this.node.hash}'`)
         ctx.push(')')
         subs.forEach(it => {
+            if (!it) return
             ctx.eol().indent()
             it.mergeUp()
         })
@@ -139,12 +70,12 @@ export class NormalTagCompiler extends AbstractCompiler<Tag> {
         }
         if (this.node.dots.length) {
             const vs = this.node.dots.map(it => new StringValue(it, location))
-            const group = new AttributeGroup([new Attribute(null, 'class', vs, location)], null, location)
+            const group = new AttributeGroup([new Attribute(undefined, 'class', vs, location)], undefined, location)
             if (this.node.attributeGroups.length) group.merge(this.node.attributeGroups[0])
             return group
         }
 
-        return this.node.attributeGroups[0] || new AttributeGroup([], null, location)
+        return this.node.attributeGroups[0] || new AttributeGroup([], undefined, location)
     }
 }
 
@@ -176,7 +107,8 @@ class ReferenceCompiler extends NormalTagCompiler {
     static type = NodeType.Tag
     static create (node: SleetNode, stack: SleetStack): Compiler | undefined {
         const refs = stack.note('references') as string[]
-        if (refs.indexOf((node as Tag).name) !== -1) return new ReferenceCompiler(node as Tag, stack)
+        const tag = node as Tag
+        if (tag.name && refs.indexOf(tag.name) !== -1) return new ReferenceCompiler(tag, stack)
     }
 
     nodeType () {
