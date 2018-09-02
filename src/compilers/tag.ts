@@ -6,8 +6,10 @@ import { EachTagCompiler, IfTagCompiler } from './extra-tag'
 import { next, compileNodes, put } from './util'
 
 const create = (tag: Tag, stack: SleetStack): Compiler | undefined => {
-    const refs = stack.note('references') as string[]
-    if (tag.name && refs.indexOf(tag.name) !== -1) return new ReferenceCompiler(tag, stack)
+    let c = ReferenceCompiler.create(tag, stack)
+    if (c) return c
+    c = RegionCompiler.create(tag, stack)
+    if (c) return c
     return new NormalTagCompiler(tag, stack)
 }
 
@@ -36,8 +38,8 @@ export class NormalTagCompiler extends AbstractCompiler<Tag> {
     compile (ctx: Context) {
         const ii = next(this.stack)
 
-        const name = this.nodeType()
         const subs = this.mergeGroup().attributes.map(it => ctx.compile(it, this.stack, -1))
+        const name = this.nodeType()
         put(this.stack, name)
         ctx.eol().indent().push(`const ${ii} = ${name}('${this.node.name || 'div'}'`)
         if (this.node.hash) ctx.push(`, '${this.node.hash}'`)
@@ -98,7 +100,17 @@ export class RegionCompiler extends AbstractCompiler<Tag> {
     compile (ctx: Context) {
         put(this.stack, 'RG')
         const ii = next(this.stack)
-        ctx.push(`const ${ii} = RG(${this.node.hash || ''})`)
+        ctx.eol().indent()
+        if (this.node.hash) ctx.push(`const ${ii} = RG('${this.node.hash}')`)
+        else ctx.push(`const ${ii} = RG()`)
+
+        const ids = compileNodes(ctx, this.stack, this.node.children)
+
+        if (ids.length) {
+            put(this.stack, 'C')
+            ctx.eol().indent().push(`C(${ii}, ${ids.join(', ')})`)
+        }
+
         return ii
     }
 }
@@ -111,8 +123,12 @@ class ReferenceCompiler extends NormalTagCompiler {
         if (tag.name && refs.indexOf(tag.name) !== -1) return new ReferenceCompiler(tag, stack)
     }
 
-    nodeType () {
+    compile (ctx: Context) {
         this.stack.last()!.note.isReference = true
+        return super.compile(ctx)
+    }
+
+    nodeType () {
         return 'REF'
     }
 }

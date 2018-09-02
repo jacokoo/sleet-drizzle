@@ -2,11 +2,12 @@
   "name": "sleet-drizzle",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/sleet-drizzle.js",
+  "main": "lib/index.js",
   "author": "Jaco Koo <jaco.koo@guyong.in>",
   "license": "ISC",
   "dependencies": {
     "acorn": "^5.7.1",
+    "drizzlejs": "file:../drizzlejs",
     "escodegen": "^1.11.0",
     "html-entities": "^1.2.1",
     "sleet": "file:../sleetjs"

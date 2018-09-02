@@ -10,7 +10,7 @@ export class ScriptCompiler extends AbstractCompiler<Tag> {
     }
 
     compile (context: Context) {
-        const body = this.check()
+        const body = this.check(context)
         const imports = this.stack.note('imports') as string[]
         body.forEach(it => {
             if (it.type.slice(0, 6) === 'Import') {
@@ -21,7 +21,7 @@ export class ScriptCompiler extends AbstractCompiler<Tag> {
         })
     }
 
-    check () {
+    check (context: Context) {
         const source = this.getContent()
         const {body} = parse(source, {sourceType: 'module', ecmaVersion: 9})
         if (body.some(it => it.type === 'ExportAllDeclaration' || it.type === 'ExportNamedDeclaration')) {
@@ -56,6 +56,15 @@ export class ScriptCompiler extends AbstractCompiler<Tag> {
             key: { type: 'Identifier', name: 'template' },
             value: { type: 'Identifier', name: 'template' }
         })
+
+        if (context.options.sourceFile) {
+            const value = context.options.sourceFile.split('/').slice(-2).join('/')
+            b.declaration.properties.push({
+                type: 'Property',
+                key: { type: 'Identifier', name: '_file' },
+                value: { type: 'Literal', value }
+            })
+        }
 
         return body
     }

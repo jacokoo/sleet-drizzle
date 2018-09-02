@@ -50,7 +50,7 @@ class DynamicAttributeCompiler extends AbstractCompiler<Attribute> {
     compile (ctx: Context) {
         this.stack.last(NodeType.Tag)!.note.isDynamic = true
 
-        put(this.stack, name)
+        put(this.stack, 'DA')
         ctx.push(`DA(${id(this.stack)}, '${this.node.name || ''}'`)
 
         this.node.values.forEach(it => {
@@ -135,7 +135,7 @@ class ComponentCompiler extends AbstractCompiler<Attribute> {
     compile (ctx: Context) {
         this.stack.last(NodeType.Tag)!.note.isDynamic = true
         put(this.stack, 'CO')
-        ctx.push(`CO(${id(this.stack)}, ${this.node.name}`)
+        ctx.push(`CO(${id(this.stack)}, '${this.node.name}'`)
         this.node.values.forEach(it => {
             ctx.push(', ')
             if (it.type !== NodeType.Helper) {

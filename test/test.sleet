@@ -1,35 +1,43 @@
 #! drizzle
 
-module > .main-content > .tile.is-ancestor.h100
-    .tile.is-6.is-parent.br
-        .tile.is-child.editor.is-12
-            file-tab(
-                tabs
-                action:change=switchFile(event)
-                action:rename=renameFile(event)
-            )
-            code-editor(code action:change=updateCode(event name | 'true'))
-            .operators > c-dropdown > .dropdown-item(d=2) > p abc
-
-    .tile.is-6.is-vertical
-        .tile.is-parent > .tile.is-child.is-relative > view-show(files json changed)
-        .tile.is-parent.bt > .tile.is-child.editor > view-json(json)
+module(closeWhenMenuClicked) > #dropdown.dropdown(on:click=clickIt(event this))
+    .dropdown-trigger > region#trigger
+        button.button > span.icon.is-small
+            svg(viewBox='0 0 129 129' enable-background='new 0 0 129 129')
+                g > path a
+    .dropdown-menu > .dropdown-content#content > region
 
 script.
-    import {compile} from 'sleet'
-
-    const examples = {
-        [hw.code]: hw,
-        [bg.code]: bg
-    }
-
     export default {
-        items: {
-            views: ['view-json', 'view-show'],
-            modules: {
-                'file-tab': 'repl/tab',
-                'code-editor': 'repl/editor',
-                'c-dropdown': 'component/dropdown'
+        store: {
+            models: {
+                closeWhenMenuClicked: () => false
             }
+        },
+
+        events: {
+            clickIt (e, it) {
+                const closeIt = this.get('closeWhenMenuClicked')
+                e.stopPropagation();
+                if (!this.dropdownHandler) {
+                    this.dropdownHandler = (ee) => {
+                        if (closeIt && ee && this.ids.content.contains(ee.target)) return
+                        it.classList.remove('is-active')
+                        document.removeEventListener('click', this.dropdownHandler)
+                        this.dropdownHandler = null
+                        this.fire('hide')
+                    }
+                    it.classList.add('is-active')
+                    document.addEventListener('click', this.dropdownHandler, false)
+                    this.fire('show')
+                    return
+                }
+
+                this.dropdownHandler(e)
+            }
+        },
+
+        beforeDestroy () {
+            if (this.dropdownHandler) this.dropdownHandler()
         }
     }
