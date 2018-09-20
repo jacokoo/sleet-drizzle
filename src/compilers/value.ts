@@ -98,7 +98,7 @@ export class TransformValueCompiler extends AbstractCompiler<TransformValue> {
             ctx.push(', ')
             if (typeof it === 'string') {
                 put(this.stack, 'TI')
-                ctx.push(`TI(${it})`)
+                ctx.push(`TI('${it}')`)
                 return
             }
             ctx.compileUp(it, this.stack)
@@ -115,7 +115,7 @@ export class TransformerCompiler extends AbstractCompiler<Transformer> {
 
     compile (ctx: Context) {
         put(this.stack, 'TI')
-        ctx.push('TI(').push(this.node.name)
+        ctx.push(`TI('${this.node.name}'`)
         this.node.params.forEach(it => {
             ctx.push(', ')
             ctx.compileUp(it, this.stack)
