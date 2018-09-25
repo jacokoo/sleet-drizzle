@@ -101,8 +101,9 @@ export class RegionCompiler extends AbstractCompiler<Tag> {
         put(this.stack, 'RG')
         const ii = next(this.stack)
         ctx.eol().indent()
-        if (this.node.hash) ctx.push(`const ${ii} = RG('${this.node.hash}')`)
-        else ctx.push(`const ${ii} = RG()`)
+        const hash = this.node.hash ? `, '${this.node.hash}'` : ''
+        const name = this.node.namespace ? `'${this.node.namespace}'` : `''`
+        ctx.push(`const ${ii} = RG(${name}${hash})`)
 
         const ids = compileNodes(ctx, this.stack, this.node.children)
 
