@@ -11,5 +11,5 @@ const code = compile(input, {
 }).code
 console.log(code)
 
-fs.writeFileSync(`${__dirname}/test-output.ts`, code, 'utf-8')
+fs.writeFileSync(`${__dirname}/test-output.js`, code, 'utf-8')
 

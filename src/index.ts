@@ -1,25 +1,10 @@
-import { SleetPlugin, Context, CompileResult, SleetOptions, SleetOutput, SleetStack } from 'sleet'
-import { NormalTagCompiler, CommentCompiler } from './compilers/tag'
-import { ModuleCompiler, ViewCompiler } from './compilers/template'
-import {
-    QuotedStringCompiler, NumberValueCompiler, BooleanValueCompiler,
-    NullValueCompiler, IdentifierValueCompiler, CompareOperatorValueCompiler,
-    TransformerCompiler, TransformValueCompiler
-} from './compilers/value'
-import { ScriptCompiler } from './compilers/script'
-import { HelperAttributeCompiler, HelperCompiler } from './compilers/helper'
-import { AttributeCompilerFactory } from './compilers/attribute'
-import { TextCompiler, StaticTextCompiler, DynamicTextCompiler } from './compilers/text'
+import { Context, CompileResult, SleetOptions, SleetOutput, SleetPlugin, SleetStack } from 'sleet'
+import { TagCompiler } from './compilers/tag'
+import { IdGenerator, Unique, Container, UniqueContainer } from './util'
 
 export const plugin = {
     prepare (context: Context) {
-        context.register(NormalTagCompiler, CommentCompiler, ModuleCompiler, ViewCompiler, ScriptCompiler)
-        context.register(QuotedStringCompiler, NumberValueCompiler, BooleanValueCompiler)
-        context.register(NullValueCompiler, IdentifierValueCompiler, CompareOperatorValueCompiler)
-        context.register(TransformerCompiler, TransformValueCompiler)
-        context.register(HelperAttributeCompiler, HelperCompiler)
-        context.register(AttributeCompilerFactory)
-        context.register(TextCompiler, StaticTextCompiler, DynamicTextCompiler)
+        context.register(TagCompiler)
     },
 
     compile (input: CompileResult, options: SleetOptions, context: Context): SleetOutput {
@@ -29,36 +14,33 @@ export const plugin = {
         }
 
         if (nodes.length > 2) {
-            throw new Error('only two root elements are allowed: 1. module/view 2. script')
+            throw new Error('only two root elements are allowed: 1. component/view 2. script')
         }
-        if (nodes[0].name !== 'module' && nodes[0].name !== 'view') {
-            throw new Error('the first root element should be module/view')
+        if (nodes[0].name !== 'component' && nodes[0].name !== 'view') {
+            throw new Error('the first root element should be component/view')
         }
         if (nodes.length > 1 && nodes[1].name !== 'script') {
             throw new Error('the second root element should be script')
         }
 
+        const idg = new IdGenerator()
+        const factory = new Unique()
+        const helper = new UniqueContainer(idg)
+        const event = new UniqueContainer(idg)
+        const widget = new Container(idg)
+        const binding = new Container(idg)
+        const tag = new Unique()
+
         const note = {
-            factories: [],
-            counter: { count: 0 },
+            idg, factory, helper, event, widget, binding, tag,
             references: [],
-            imports: [],
-            isModule: nodes[0].name === 'module'
+            import: new Unique(),
+            isComponent: nodes[0].name === 'component'
         }
 
         const stack = new SleetStack([], note)
-        let script
-        if (nodes[1]) {
-            script = context.compile(nodes[1], stack, -1)
-        }
-        const sub = context.compile(nodes[0], stack, -1)!
-
-        note.imports.forEach(it => context.eol().push(it))
-        context.eol().push(`import { factory } from 'drizzlejs'`)
-        context.eol().push(`const { ${note.factories.join(', ')} } = factory`)
-        context.eol().eol()
-        sub.mergeUp()
-        if (script) script.mergeUp()
+        const sub = context.compile(nodes[0], stack, -1)
+        if (sub) sub.mergeUp()
 
         return {
             code: context.getOutput(),
